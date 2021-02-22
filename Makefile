@@ -1,5 +1,5 @@
 CC ?= clang
-CFLAGS := -Wall -Wextra -Werror -O3 -g -ldl
+CFLAGS := -Wall -Wextra -std=gnu17 -pedantic -O3 -g -ldl
 
 .PHONY: run clean
 

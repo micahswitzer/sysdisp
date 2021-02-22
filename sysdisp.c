@@ -1,3 +1,5 @@
+#define _DEFAULT_SOURCE          // needed for syscall
+#define _POSIX_C_SOURCE 199309L  // needed for sigaction and siginfo_t
 #include <dlfcn.h>
 #include <errno.h>
 #include <signal.h>
@@ -73,6 +75,7 @@ static void sigsys_handler(int signo, siginfo_t *info, void *context)
 
 	// this code is highly platform-specific (it will only work on x86_64)
 	ucontext_t *ctx = (ucontext_t *)context;
+#ifdef __x86_64__
 	fprintf(stderr, "syscall: rax = %016llx, rdi = %016llx, rsi = %016llx, rdx = %016llx\n",
 		ctx->uc_mcontext.gregs[REG_RAX],
 		ctx->uc_mcontext.gregs[REG_RDI],
@@ -85,6 +88,10 @@ static void sigsys_handler(int signo, siginfo_t *info, void *context)
 			(char *)ctx->uc_mcontext.gregs[REG_RSI]);
 		ctx->uc_mcontext.gregs[REG_RAX] = ctx->uc_mcontext.gregs[REG_RDX] + 1;
 	}
+#else
+	UNUSED(ctx);
+#pragma message "Unsupported architecture. No information will be printed for syscalls."
+#endif
 
 	syscall_filter = SYSCALL_DISPATCH_FILTER_BLOCK;
 }
@@ -110,7 +117,7 @@ int main(int argc, char **argv)
 	printf(msg1, 10); //write(1, msg1, sizeof(msg1) - 1);
 
 	// make a raw syscall just for fun
-	syscall(0xdeadbeeef, 0xfeed, 0xcafe, 0xbabe);
+	syscall(0xdeadbeef, 0xfeed, 0xcafe, 0xbabe);
 
 	static const char msg2[] = "this also won't work! %04x\n";
 	printf(msg2, 0xdead); //write(1, msg2, sizeof(msg2) - 1);
