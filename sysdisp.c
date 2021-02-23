@@ -11,6 +11,8 @@
 #include <ucontext.h>
 #include <unistd.h>
 
+#include "syscall.h"
+
 #ifndef PR_SET_SYSCALL_USER_DISPATCH
 #pragma message "PR_SET_SYSCALL_USER_DISPATCH was not defined in the system headers, this feature might not be supported by the host's kernel"
 /* Dispatch syscalls to a userspace handler */
@@ -118,6 +120,9 @@ int main(int argc, char **argv)
 
 	// make a raw syscall just for fun
 	syscall(0xdeadbeef, 0xfeed, 0xcafe, 0xbabe);
+
+	// custom syscall wrapper
+	syscall64(0xfeedf00d, 0xdead, 0xf00d, 256, 1024, 0);
 
 	static const char msg2[] = "this also won't work! %04x\n";
 	printf(msg2, 0xdead); //write(1, msg2, sizeof(msg2) - 1);
